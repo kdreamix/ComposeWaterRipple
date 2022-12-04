@@ -21,31 +21,33 @@ import kotlin.random.Random
 @Composable
 fun WaterRipple() {
 
-
     LaunchedEffect(Unit) {
         while (true) {
-            delay(1000L)
-            WaterWave.doWave()
+            withFrameNanos{
+                WaterWave.doWave()
+            }
         }
     }
+
     Canvas(modifier = Modifier
-        .background(Color.White)
+        .background(Color.Black)
         .fillMaxSize()
         .pointerInput(Unit) {
             detectTapGestures {
 
             }
         }) {
-        Log.d("WATER", "drawCircle")
+//        Log.d("WATER", "drawCircle")
 
         for (i in 1 until cols) {
             for (j in 1 until rows) {
+                val index = WaterWave.getIndex(i,j)
+                val color = WaterWave.curr[index].toInt() * 255
                 drawCircle(
                     Color(
-                        WaterWave.pixels[i][j].toInt(),
-                        WaterWave.pixels[i][j].toInt(),
-                        WaterWave.pixels[i][j].toInt()
-                    ), center = Offset(i.toFloat(), j.toFloat()), radius = 2f
+                        color,
+                        color,color
+                    ), center = Offset(i.toFloat() * 10, j.toFloat()* 10), radius = 1f
                 )
 //                drawCircle(Color.Blue, center = Offset(i.toFloat(),j.toFloat()), radius = 2f)
             }
@@ -55,56 +57,65 @@ fun WaterRipple() {
 
 
 object WaterWave {
-    const val damping = 098f
-    val cols = 200
-    val rows = 200
+    const val damping = 0.9f
+    val cols = 50
+    val rows = 50
 
-    var curr: MutableList<MutableList<Float>> by
-    mutableStateOf(MutableList(WaterWave.cols) { MutableList(WaterWave.rows) { 100f } })
-
-
-    var prev: MutableList<MutableList<Float>> by
-    mutableStateOf(MutableList(WaterWave.cols) { MutableList(WaterWave.rows) { 100f } })
+    var curr = mutableStateListOf<Float>()
+    var prev = mutableStateListOf<Float>()
 
 
-    var pixels: MutableList<MutableList<Float>> by
-    mutableStateOf(MutableList(WaterWave.cols) { MutableList(WaterWave.rows) { 100f } })
+    init {
+        curr.addAll(MutableList(rows * cols) { 0f })
+        prev.addAll(MutableList(rows * cols) { 0f })
+//        pixels.addAll(MutableList(rows * cols) { 100f })
+    }
 
-    fun onClick(x: Int, y: Int) {
+    fun onClick() {
+//        val x = Random.nextInt(1, cols)
+//        val y = Random.nextInt(1, cols)
+//        Log.d("WATER", "xy:$x, $y")
+        val clickIndex = getIndex(25,25)
+        prev[clickIndex] = 255f
     }
 
     fun getIndex(x: Int, y: Int): Int {
         return x + y * cols
     }
 
+    fun getXY(index: Int): Pair<Int, Int> {
+        val x = index % cols
+        val y = index / cols
+        return x to y
+    }
+
+
     fun doWave() {
-        // random pixel location
-        val x = Random.nextInt(1, cols)
-        val y = Random.nextInt(1, cols)
-        Log.d("WATER", "xy:$x, $y")
 
-        prev[x][y] = 255f
-
-        for (i in 1 until cols - 1) {
-            for (j in 1 until rows - 1) {
-                curr[i][j] = (
-                        curr[i - 1][j]
-                                + curr[i + 1][j]
-                                + curr[i][j - 1]
-                                + curr[i][j + 1]
-                        ) / 2 - prev[i][j]
-                curr[i][j] = curr[i][j] * WaterWave.damping
+        for (i in rows until cols*cols - rows) {
+//                val index = getIndex(i,)
+//                val index1 = getIndex(i - 1, j)
+//                val index2 = getIndex(i + 1, j)
+//                val index3 = getIndex(i, j+1)
+//                val index4 = getIndex(i, j-1)
+//                Log.d("KIT", "index $index $index1 $index2 $index3 $index4")
+                curr[i] = (
+                        curr[i+1]
+                                + curr[i-1]
+                                + curr[i+cols]
+                                + curr[i-cols]
+                        ) / 2 - prev[i]
+                curr[i] = curr[i] * damping
+//                Log.d("WATER", "index:$index")
 
                 // rendering
-                pixels[i][j] = curr[i][j] * 255
-                val tmpPixels = pixels
-                pixels = tmpPixels
-            }
+//                pixels[index] += curr[index] * 255
+
         }
         //swap
         val tmp = prev
-        prev = (curr)
-        curr = (tmp)
+        prev = curr
+        curr = tmp
     }
 }
 

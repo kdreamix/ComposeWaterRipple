@@ -12,6 +12,8 @@ import com.kitmak.composewave.ui.theme.ComposeWaveTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WaterWave.onClick()
+
         setContent {
             ComposeWaveTheme {
                 // A surface container using the 'background' color from the theme
