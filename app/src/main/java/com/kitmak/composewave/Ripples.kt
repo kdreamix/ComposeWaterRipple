@@ -25,90 +25,98 @@ import kotlin.random.Random
 @Composable
 fun WaterRipple(modifier: Modifier = Modifier) {
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            withFrameMillis {
-                WaterWave.doWave()
-            }
-        }
+  LaunchedEffect(Unit) {
+    while (true) {
+      withFrameMillis {
+        WaterWave.doWave()
+      }
     }
-    val size = with(LocalDensity.current) { (COLS * 5).toDp() }
+  }
+  val size = with(LocalDensity.current) { (COLS * WaterWave.SCALE).toDp() }
 
-    Canvas(modifier = Modifier
-        .background(Color.Black)
-        .size(size)
-        .pointerInput(Unit) {
-            detectTapGestures {
-                Log.d("WATER", "click $it")
-                onClick(it)
-            }
-        }) {
+  Canvas(modifier = Modifier
+    .background(Color.Black)
+    .size(size)
+    .pointerInput(Unit) {
+      detectTapGestures {
+        Log.d("WATER", "click $it")
+        onClick(it)
+      }
+    }) {
 
-        invalidator.apply {
-            drawImage(imageBitmap.asImageBitmap())
-        }
-
+    invalidator.apply {
+      drawImage(imageBitmap.asImageBitmap())
     }
+
+  }
 }
 
 
 object WaterWave {
-    private const val DAMPENING = 0.98f
-    private const val N = 250
-    const val COLS = N
-    private const val ROWS = N
+  const val DAMPENING = 0.99f
+  const val AMPLITUDE = 3
+  const val SCALE = 5
+  const val N = 200
+  const val COLS = N
+  const val ROWS = N
 
-    var invalidator by mutableStateOf(0)
-    var curr = mutableListOf<Float>()
-    var prev = mutableListOf<Float>()
+  var invalidator by mutableStateOf(0)
+  var curr = mutableListOf<Float>()
+  var prev = mutableListOf<Float>()
 
-    var imageBitmap: Bitmap by mutableStateOf(Bitmap.createBitmap(
-        COLS * 5,
-        ROWS * 5,
-        Bitmap.Config.ARGB_8888
-    ))
+  var imageBitmap: Bitmap by mutableStateOf(Bitmap.createBitmap(
+    COLS * SCALE,
+    ROWS * SCALE,
+    Bitmap.Config.ARGB_8888
+  ))
 
-    init {
-        curr.addAll(MutableList(ROWS * COLS) { 0f })
-        prev.addAll(MutableList(ROWS * COLS) { 0f })
-    }
+  init {
+    curr.addAll(MutableList(ROWS * COLS) { 0f })
+    prev.addAll(MutableList(ROWS * COLS) { 0f })
+  }
 
-    fun onClick(offset: Offset) {
-       // val x = Random.nextInt(1, COLS)
-       // val y = Random.nextInt(1, COLS)
+  fun onClick(offset: Offset) {
+    // val x = Random.nextInt(1, COLS)
+    // val y = Random.nextInt(1, COLS)
 //        Log.d("WATER", "xy:$x, $y")
-        val clickIndex = getIndex(offset.x.toInt()/5, offset.y.toInt()/5)
-        curr[clickIndex] = 255f
+    val clickIndex = getIndex(offset.x.toInt() / SCALE, offset.y.toInt() / SCALE)
+    curr[clickIndex] = 255f
+  }
+
+  fun getIndex(x: Int, y: Int): Int {
+    return x + y * COLS
+  }
+
+  fun doWave() {
+    for (i in ROWS until COLS * COLS - ROWS) {
+      curr[i] =
+        (prev[i + 1] + prev[i - 1] + prev[i + COLS] + prev[i - COLS])/2f - curr[i]
+      curr[i] = curr[i] * DAMPENING
+      // curr[i] -= curr[i].toInt().shr(5).toFloat()
     }
+    //swap
+    prev = curr.apply { curr = prev }
 
-    fun getIndex(x: Int, y: Int): Int {
-        return x + y * COLS
+
+    // rendering
+    for (i in 1 until COLS) {
+      for (j in 1 until ROWS) {
+        val index = getIndex(i, j)
+        val color = curr[index].toInt()
+        imageBitmap.drawPixels(i* SCALE, j* SCALE, android.graphics.Color.rgb(color, color, color))
+
+      }
     }
+    invalidator++
+  }
 
-    fun doWave() {
-        for (i in ROWS until COLS * COLS - ROWS) {
-            curr[i] = (prev[i + 1] + prev[i - 1] + prev[i + COLS] + prev[i - COLS]) / 2 - curr[i]
-            curr[i] = curr[i] * DAMPENING
-        }
-
-        //swap
-        val tmp = prev
-        prev = curr
-        curr = tmp
-
-        // rendering
-        for (i in 1 until COLS) {
-            for (j in 1 until ROWS) {
-                val index = getIndex(i, j)
-                val color = curr[index].toInt()
-                val i = i * 5
-                val j = j * 5
-                imageBitmap.setPixel(i,j, android.graphics.Color.rgb(color,color,color))
-
-            }
-        }
-        invalidator ++
-    }
+  inline fun Bitmap.drawPixels(i: Int, j: Int, brightness: Int) {
+    setPixel(i, j, android.graphics.Color.rgb(brightness, brightness, brightness))
+    setPixel(i + AMPLITUDE, j, android.graphics.Color.rgb(brightness, brightness, brightness))
+    setPixel(i - AMPLITUDE, j, android.graphics.Color.rgb(brightness, brightness, brightness))
+    setPixel(i, j + AMPLITUDE, android.graphics.Color.rgb(brightness, brightness, brightness))
+    setPixel(i, j - AMPLITUDE, android.graphics.Color.rgb(brightness, brightness, brightness))
+  }
 }
 
 
