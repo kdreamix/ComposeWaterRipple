@@ -53,10 +53,10 @@ fun WaterRipple(modifier: Modifier = Modifier) {
 
 
 object WaterWave {
-  const val DAMPENING = 0.99f
+  const val DAMPENING = 0.95f
   const val AMPLITUDE = 3
   const val SCALE = 5
-  const val N = 200
+  const val N = 250
   const val COLS = N
   const val ROWS = N
 
@@ -111,11 +111,12 @@ object WaterWave {
   }
 
   inline fun Bitmap.drawPixels(i: Int, j: Int, brightness: Int) {
+    // setPixels(IntArray(4){brightness}, getIndex(i, j), COLS * SCALE, i,j,2,2)
     setPixel(i, j, android.graphics.Color.rgb(brightness, brightness, brightness))
-    setPixel(i + AMPLITUDE, j, android.graphics.Color.rgb(brightness, brightness, brightness))
-    setPixel(i - AMPLITUDE, j, android.graphics.Color.rgb(brightness, brightness, brightness))
-    setPixel(i, j + AMPLITUDE, android.graphics.Color.rgb(brightness, brightness, brightness))
-    setPixel(i, j - AMPLITUDE, android.graphics.Color.rgb(brightness, brightness, brightness))
+    // setPixel(i + AMPLITUDE, j, android.graphics.Color.rgb(brightness, brightness, brightness))
+    // setPixel(i - AMPLITUDE, j, android.graphics.Color.rgb(brightness, brightness, brightness))
+    // setPixel(i, j + AMPLITUDE, android.graphics.Color.rgb(brightness, brightness, brightness))
+    // setPixel(i, j - AMPLITUDE, android.graphics.Color.rgb(brightness, brightness, brightness))
   }
 }
 
