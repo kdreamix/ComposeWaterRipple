@@ -13,6 +13,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import com.kitmak.composewave.WaterWave.cols
+import com.kitmak.composewave.WaterWave.getXY
+import com.kitmak.composewave.WaterWave.onClick
 import com.kitmak.composewave.WaterWave.rows
 import kotlinx.coroutines.delay
 import kotlin.random.Random
@@ -34,11 +36,22 @@ fun WaterRipple() {
         .fillMaxSize()
         .pointerInput(Unit) {
             detectTapGestures {
-
+                Log.d("WATER", "click $it")
+                onClick(Offset(25f,25f))
             }
         }) {
 //        Log.d("WATER", "drawCircle")
 
+//        for (i in 1 until cols * cols){
+////            val index = WaterWave.getIndex(i,j)
+//            val color = WaterWave.curr[i].toInt() * 255
+//            drawCircle(
+//                Color(
+//                    color,
+//                    color,color
+//                ), center = getXY(i), radius = 2f
+//            )
+//        }
         for (i in 1 until cols) {
             for (j in 1 until rows) {
                 val index = WaterWave.getIndex(i,j)
@@ -47,9 +60,8 @@ fun WaterRipple() {
                     Color(
                         color,
                         color,color
-                    ), center = Offset(i.toFloat() * 10, j.toFloat()* 10), radius = 1f
+                    ), center = Offset(i.toFloat() * 10, j.toFloat()* 10), radius = 2f
                 )
-//                drawCircle(Color.Blue, center = Offset(i.toFloat(),j.toFloat()), radius = 2f)
             }
         }
     }
@@ -58,8 +70,8 @@ fun WaterRipple() {
 
 object WaterWave {
     const val damping = 0.9f
-    val cols = 50
-    val rows = 50
+    val cols = 40
+    val rows = 40
 
     var curr = mutableStateListOf<Float>()
     var prev = mutableStateListOf<Float>()
@@ -68,25 +80,24 @@ object WaterWave {
     init {
         curr.addAll(MutableList(rows * cols) { 0f })
         prev.addAll(MutableList(rows * cols) { 0f })
-//        pixels.addAll(MutableList(rows * cols) { 100f })
     }
 
-    fun onClick() {
+    fun onClick(offset:Offset) {
 //        val x = Random.nextInt(1, cols)
 //        val y = Random.nextInt(1, cols)
 //        Log.d("WATER", "xy:$x, $y")
-        val clickIndex = getIndex(25,25)
-        prev[clickIndex] = 255f
+        val clickIndex = getIndex(offset.x.toInt(),offset.y.toInt())
+        curr[clickIndex] = 255f
     }
 
     fun getIndex(x: Int, y: Int): Int {
         return x + y * cols
     }
 
-    fun getXY(index: Int): Pair<Int, Int> {
-        val x = index % cols
-        val y = index / cols
-        return x to y
+    fun getXY(index: Int): Offset {
+        val x = index % cols.toFloat()
+        val y = index / cols.toFloat()
+        return Offset(x,y)
     }
 
 
@@ -99,12 +110,7 @@ object WaterWave {
 //                val index3 = getIndex(i, j+1)
 //                val index4 = getIndex(i, j-1)
 //                Log.d("KIT", "index $index $index1 $index2 $index3 $index4")
-                curr[i] = (
-                        curr[i+1]
-                                + curr[i-1]
-                                + curr[i+cols]
-                                + curr[i-cols]
-                        ) / 2 - prev[i]
+                curr[i] = (prev[i+1] + prev[i-1] + prev[i+cols] + prev[i-cols]) / 2 - curr[i]
                 curr[i] = curr[i] * damping
 //                Log.d("WATER", "index:$index")
 
