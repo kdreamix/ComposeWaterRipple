@@ -39,9 +39,7 @@ Surface(
 ```
 
 ### Demo
-
-![This is a demo](ripple_demo.webm)
-
+[](https://user-images.githubusercontent.com/16048784/205979938-2d84249e-113d-4408-a0ed-e862d24391ed.webm)
 
 ## Acknowledgments
 
