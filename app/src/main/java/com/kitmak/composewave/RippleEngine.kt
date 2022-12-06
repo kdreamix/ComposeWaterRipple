@@ -8,7 +8,6 @@ import androidx.compose.ui.geometry.Offset
 import kotlin.math.max
 
 /**
- * @param n size
  * @param scale scaling factor of pixel drawing position
  * @param cols number of cols
  * @param rows number of rows
@@ -20,7 +19,7 @@ class RippleEngine(
     var rows: Int = Defaults.ROWS,
     val dampening: Int = Defaults.DAMPENING,
 ) {
-    var running = false
+    private var running = false
 
     // Total number of pixels
     private val max: Int
@@ -34,11 +33,11 @@ class RippleEngine(
         const val DAMPENING = 64
     }
 
-    var invalidator by mutableStateOf(0)
-    var curr = MutableList(max) { 0f }
-    var prev = MutableList(max) { 0f }
+    internal var invalidator by mutableStateOf(0)
+    private var curr = MutableList(max) { 0f }
+    private var prev = MutableList(max) { 0f }
 
-    var imageBitmap: Bitmap by mutableStateOf(
+    internal var imageBitmap: Bitmap by mutableStateOf(
         Bitmap.createBitmap(
             cols * scale,
             rows * scale,

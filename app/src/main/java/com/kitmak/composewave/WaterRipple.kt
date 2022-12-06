@@ -1,13 +1,10 @@
 package com.kitmak.composewave
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.unit.IntSize
 
-@SuppressLint("UnrememberedMutableState")
 @Composable
 fun WaterRipple(modifier: Modifier = Modifier, rippleEngine: RippleEngine = RippleEngine()) {
     var width by remember { mutableStateOf(250) }

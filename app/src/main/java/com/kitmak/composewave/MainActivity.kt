@@ -12,7 +12,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.kitmak.composewave.ui.theme.ComposeWaveTheme
 import com.kitmak.composewave.ui.theme.OceanBlue
@@ -35,8 +34,8 @@ class MainActivity : ComponentActivity() {
                         val canvasModifier =
                             Modifier
                                 .background(OceanBlue)
-                                .width(100.dp)
-                                .height(200.dp)
+                                .width(400.dp)
+                                .height(400.dp)
                                 .pointerInput(Unit) {
                                     detectTapGestures {
                                         rippleEngine.onClick(it)
