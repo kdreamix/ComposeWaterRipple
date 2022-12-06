@@ -35,8 +35,8 @@ class MainActivity : ComponentActivity() {
                         val canvasModifier =
                             Modifier
                                 .background(OceanBlue)
-                                .fillMaxWidth()
-                                .aspectRatio(1f)
+                                .width(100.dp)
+                                .height(200.dp)
                                 .pointerInput(Unit) {
                                     detectTapGestures {
                                         rippleEngine.onClick(it)

@@ -101,7 +101,7 @@ class RippleEngine(
      */
     fun evolve() {
         if (!running) return
-        for (i in rows until max - rows) {
+        for (i in cols until max - cols) {
             curr[i] = (prev[i + 1] + prev[i - 1] + prev[i + cols] + prev[i - cols]) / 2f - curr[i]
             // Dampening
             curr[i] = curr[i] - curr[i] / dampening
