@@ -25,7 +25,7 @@ fun WaterRipple(modifier: Modifier = Modifier, rippleEngine: RippleEngine = Ripp
     }
 
     Canvas(modifier = modifier) {
-        width = size.height.toInt()
+        width = size.width.toInt()
         height = size.height.toInt()
 
         rippleEngine.invalidator.apply {
