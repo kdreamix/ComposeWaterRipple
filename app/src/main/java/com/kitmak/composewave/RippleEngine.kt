@@ -6,19 +6,30 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 
-object RippleEngine {
-    // Size
-    const val N = 250
-    // Scaling factor of pixel drawing position
-    const val SCALE = 5
-    // number of cols
-    private const val COLS = N
-    // number of rows
-    private const val ROWS = N
+/**
+ * @param n size
+ * @param scale scaling factor of pixel drawing position
+ * @param cols number of cols
+ * @param rows number of rows
+ * @param dampening dampening factor, must be power of two, larger the power slow the ripple dampens.
+ */
+class RippleEngine(
+    val n: Int = Defaults.N,
+    val scale: Int = Defaults.SCALE,
+    val cols: Int = Defaults.COLS,
+    val rows: Int = Defaults.ROWS,
+    val dampening: Int = Defaults.DAMPENING,
+) {
     // Total number of pixels
-    private const val MAX = ROWS * COLS
-    // Factor of dampening, must be power of two, larger the power slow the ripple dampens.
-    private const val DAMPENING = 64
+    private val max: Int = rows * cols
+
+    private object Defaults {
+        const val N = 250
+        const val SCALE = 5
+        const val COLS = N
+        const val ROWS = N
+        const val DAMPENING = 64
+    }
 
     var invalidator by mutableStateOf(0)
     var curr = mutableListOf<Float>()
@@ -26,15 +37,15 @@ object RippleEngine {
 
     var imageBitmap: Bitmap by mutableStateOf(
         Bitmap.createBitmap(
-            COLS * SCALE,
-            ROWS * SCALE,
+            cols * scale,
+            rows * scale,
             Bitmap.Config.ARGB_8888
         )
     )
 
     init {
-        curr.addAll(MutableList(ROWS * COLS) { 0f })
-        prev.addAll(MutableList(ROWS * COLS) { 0f })
+        curr.addAll(MutableList(max) { 0f })
+        prev.addAll(MutableList(max) { 0f })
     }
 
     /**
@@ -45,15 +56,15 @@ object RippleEngine {
     fun onClick(offset: Offset) {
         if (offset.x < 0 || offset.y < 0) return
 
-        val clickIndex = getIndex(offset.x.toInt() / SCALE, offset.y.toInt() / SCALE)
+        val clickIndex = getIndex(offset.x.toInt() / scale, offset.y.toInt() / scale)
 
-        if (clickIndex > MAX || clickIndex < 0) return
+        if (clickIndex > max || clickIndex < 0) return
 
-        if (clickIndex+N > MAX || clickIndex-N< 0) return
+        if (clickIndex+n > max || clickIndex-n< 0) return
 
         prev[clickIndex] = 255f
-        prev[clickIndex+N] = 255f
-        prev[clickIndex-N] = 255f
+        prev[clickIndex+n] = 255f
+        prev[clickIndex-n] = 255f
         prev[clickIndex+1] = 255f
         prev[clickIndex-1] = 255f
     }
@@ -62,29 +73,29 @@ object RippleEngine {
      * Converts 2d array indices to 1d index
      */
     private fun getIndex(x: Int, y: Int): Int {
-        return x + y * COLS
+        return x + y * cols
     }
 
     /**
      * Updates state of pixel locations
      */
     fun evolve() {
-        for (i in ROWS until COLS * COLS - ROWS) {
-            curr[i] = (prev[i + 1] + prev[i - 1] + prev[i + COLS] + prev[i - COLS]) / 2f - curr[i]
+        for (i in rows until max - rows) {
+            curr[i] = (prev[i + 1] + prev[i - 1] + prev[i + cols] + prev[i - cols]) / 2f - curr[i]
             // Dampening
-            curr[i] = curr[i] - curr[i] / DAMPENING
+            curr[i] = curr[i] - curr[i] / dampening
         }
         //swap
         prev = curr.apply { curr = prev }
 
         // rendering
-        for (i in 1 until COLS) {
-            for (j in 1 until ROWS) {
+        for (i in 1 until cols) {
+            for (j in 1 until rows) {
                 val index = getIndex(i, j)
                 val brightness = curr[index].toInt()
                 imageBitmap.setPixel(
-                    i * SCALE,
-                    j * SCALE,
+                    i * scale,
+                    j * scale,
                     android.graphics.Color.rgb(brightness, brightness, brightness)
                 )
             }

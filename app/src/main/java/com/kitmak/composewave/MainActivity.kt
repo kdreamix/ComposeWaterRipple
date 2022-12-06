@@ -21,7 +21,11 @@ import com.kitmak.composewave.ui.theme.OceanBlue
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        val rippleEngine = RippleEngine(
+            n = 250,
+            scale = 5,
+            dampening = 32,
+        )
         setContent {
             ComposeWaveTheme {
                 // A surface container using the 'background' color from the theme
@@ -29,9 +33,11 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier
+                    Box(
+                        contentAlignment = Alignment.Center, modifier = Modifier
                     ) {
-                        val size = with(LocalDensity.current) { (RippleEngine.N * RippleEngine.SCALE).toDp() }
+                        val size =
+                            with(LocalDensity.current) { (rippleEngine.n * rippleEngine.scale).toDp() }
 
                         val canvasModifier =
                             Modifier
@@ -39,21 +45,22 @@ class MainActivity : ComponentActivity() {
                                 .size(size)
                                 .pointerInput(Unit) {
                                     detectTapGestures {
-                                        RippleEngine.onClick(it)
+                                        rippleEngine.onClick(it)
                                     }
                                 }
                                 .pointerInput(Unit) {
                                     detectDragGestures(
                                         onDragStart = {
-                                            RippleEngine.onClick(it)
+                                            rippleEngine.onClick(it)
                                         },
                                         onDrag = { change, _ ->
-                                            RippleEngine.onClick(change.position)
+                                            rippleEngine.onClick(change.position)
                                         }
                                     )
 
                                 }
-                        WaterRipple(canvasModifier)
+
+                        WaterRipple(canvasModifier, rippleEngine)
                     }
                 }
             }
