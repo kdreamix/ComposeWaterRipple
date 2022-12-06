@@ -13,7 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import com.kitmak.composewave.ui.theme.ComposeWaveTheme
@@ -32,7 +31,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier
                     ) {
-                        val size = with(LocalDensity.current) { (WaterWave.COLS * WaterWave.SCALE).toDp() }
+                        val size = with(LocalDensity.current) { (RippleEngine.N * RippleEngine.SCALE).toDp() }
 
                         val canvasModifier =
                             Modifier
@@ -40,16 +39,16 @@ class MainActivity : ComponentActivity() {
                                 .size(size)
                                 .pointerInput(Unit) {
                                     detectTapGestures {
-                                        WaterWave.onClick(it)
+                                        RippleEngine.onClick(it)
                                     }
                                 }
                                 .pointerInput(Unit) {
                                     detectDragGestures(
                                         onDragStart = {
-                                            WaterWave.onClick(it)
+                                            RippleEngine.onClick(it)
                                         },
                                         onDrag = { change, _ ->
-                                            WaterWave.onClick(change.position)
+                                            RippleEngine.onClick(change.position)
                                         }
                                     )
 
