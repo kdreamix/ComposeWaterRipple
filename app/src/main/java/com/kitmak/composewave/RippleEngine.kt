@@ -49,6 +49,8 @@ object RippleEngine {
 
         if (clickIndex > MAX || clickIndex < 0) return
 
+        if (clickIndex+N > MAX || clickIndex-N< 0) return
+
         prev[clickIndex] = 255f
         prev[clickIndex+N] = 255f
         prev[clickIndex-N] = 255f
