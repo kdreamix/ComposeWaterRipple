@@ -33,28 +33,8 @@ fun WaterRipple(modifier: Modifier = Modifier) {
             }
         }
     }
-    val size = with(LocalDensity.current) { (COLS * WaterWave.SCALE).toDp() }
 
-    Canvas(modifier = Modifier
-        .background(Color(0, 54, 119))
-        .size(size)
-        .pointerInput(Unit) {
-            detectTapGestures {
-                onClick(it)
-            }
-        }
-        .pointerInput(Unit){
-            detectDragGestures(
-                onDragStart = {
-                    onClick(it)
-                },
-                onDrag = { change, _ ->
-                    onClick(change.position)
-                }
-            )
-
-        }) {
-
+    Canvas(modifier = modifier) {
         invalidator.apply {
             drawImage(imageBitmap.asImageBitmap())
         }
