@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import kotlin.math.max
 
 /**
  * @param n size
@@ -14,26 +15,28 @@ import androidx.compose.ui.geometry.Offset
  * @param dampening dampening factor, must be power of two, larger the power slow the ripple dampens.
  */
 class RippleEngine(
-    val n: Int = Defaults.N,
-    val scale: Int = Defaults.SCALE,
-    val cols: Int = Defaults.COLS,
-    val rows: Int = Defaults.ROWS,
+    private var scale: Int = Defaults.SCALE,
+    var cols: Int = Defaults.COLS,
+    var rows: Int = Defaults.ROWS,
     val dampening: Int = Defaults.DAMPENING,
 ) {
+    var running = false
+
     // Total number of pixels
-    private val max: Int = rows * cols
+    private val max: Int
+        get() = rows * cols
 
     private object Defaults {
-        const val N = 250
-        const val SCALE = 5
-        const val COLS = N
-        const val ROWS = N
+        const val SIZE = 250
+        const val SCALE = 8
+        const val COLS = SIZE
+        const val ROWS = SIZE
         const val DAMPENING = 64
     }
 
     var invalidator by mutableStateOf(0)
-    var curr = mutableListOf<Float>()
-    var prev = mutableListOf<Float>()
+    var curr = MutableList(max) { 0f }
+    var prev = MutableList(max) { 0f }
 
     var imageBitmap: Bitmap by mutableStateOf(
         Bitmap.createBitmap(
@@ -43,9 +46,25 @@ class RippleEngine(
         )
     )
 
-    init {
-        curr.addAll(MutableList(max) { 0f })
-        prev.addAll(MutableList(max) { 0f })
+    fun setWidth(width: Int) {
+        cols = width / scale
+        invalidate()
+    }
+
+    fun setHeight(height: Int) {
+        rows = height / scale
+        invalidate()
+    }
+
+    private fun invalidate(){
+        curr = MutableList(max) { 0f }
+        prev = MutableList(max) { 0f }
+        imageBitmap =
+            Bitmap.createBitmap(
+                cols * scale,
+                rows * scale,
+                Bitmap.Config.ARGB_8888
+            )
     }
 
     /**
@@ -54,19 +73,20 @@ class RippleEngine(
      * @param offset coordinates of clicked pixels
      */
     fun onClick(offset: Offset) {
+        running = true
         if (offset.x < 0 || offset.y < 0) return
 
         val clickIndex = getIndex(offset.x.toInt() / scale, offset.y.toInt() / scale)
 
         if (clickIndex > max || clickIndex < 0) return
 
-        if (clickIndex+n > max || clickIndex-n< 0) return
+        if (clickIndex + max(rows, cols) > max || clickIndex - max(rows, cols) < 0) return
 
         prev[clickIndex] = 255f
-        prev[clickIndex+n] = 255f
-        prev[clickIndex-n] = 255f
-        prev[clickIndex+1] = 255f
-        prev[clickIndex-1] = 255f
+        prev[clickIndex + cols] = 255f
+        prev[clickIndex - cols] = 255f
+        prev[clickIndex + 1] = 255f
+        prev[clickIndex - 1] = 255f
     }
 
     /**
@@ -80,12 +100,13 @@ class RippleEngine(
      * Updates state of pixel locations
      */
     fun evolve() {
+        if (!running) return
         for (i in rows until max - rows) {
             curr[i] = (prev[i + 1] + prev[i - 1] + prev[i + cols] + prev[i - cols]) / 2f - curr[i]
             // Dampening
             curr[i] = curr[i] - curr[i] / dampening
         }
-        //swap
+        //swap buffer
         prev = curr.apply { curr = prev }
 
         // rendering
